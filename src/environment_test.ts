@@ -19,6 +19,7 @@ import {ENV, Environment, Features} from './environment';
 import {MathBackend} from './math/backends/backend';
 import {MathBackendCPU} from './math/backends/backend_cpu';
 import {MathBackendWebGL} from './math/backends/backend_webgl';
+import {MathBackendWASM} from './math/backends/backend_wasm';
 
 describe('disjoint query timer enabled', () => {
   afterEach(() => {
@@ -222,6 +223,7 @@ describe('Backend', () => {
   it('default ENV has cpu and webgl, and webgl is the best available', () => {
     expect(ENV.getBackend('webgl') != null).toBe(true);
     expect(ENV.getBackend('cpu') != null).toBe(true);
+    expect(ENV.getBackend('wasm') != null).toBe(true);
     expect(ENV.getBestBackend()).toBe(ENV.getBackend('webgl'));
   });
 
