@@ -157,7 +157,7 @@ function isWebGLGetBufferSubDataAsyncExtensionEnabled(webGLVersion: number) {
   return isEnabled;
 }
 
-export type BackendType = 'webgl'|'cpu';
+export type BackendType = 'webgl'|'cpu'|'wasm';
 
 export class Environment {
   private features: Features = {};

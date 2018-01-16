@@ -17,6 +17,7 @@
 
 import {ENV, Features} from './environment';
 import {MathBackendCPU} from './math/backends/backend_cpu';
+import {MathBackendWASM} from './math/backends/backend_wasm';
 import {MathBackendWebGL} from './math/backends/backend_webgl';
 import {NDArrayMath} from './math/math';
 import {DataType, NDArray} from './math/ndarray';
@@ -274,6 +275,17 @@ export function describeMathGPU(
       (testName, tests, features) => executeMathTests(testName, tests, () => {
         const safeMode = true;
         return new NDArrayMath(new MathBackendWebGL(), safeMode);
+      }, features), featuresList);
+}
+
+export function describeMathWASM(
+    name: string, tests: MathTests[], featuresList?: Features[]) {
+  const testNameBase = 'WASM: math.' + name;
+  describeWithFeaturesAndExecutor(
+      testNameBase, tests as Tests[],
+      (testName, tests, features) => executeMathTests(testName, tests, () => {
+        const safeMode = true;
+        return new NDArrayMath(new MathBackendWASM(), safeMode);
       }, features), featuresList);
 }
 

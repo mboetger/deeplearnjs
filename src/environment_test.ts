@@ -19,7 +19,6 @@ import {ENV, Environment, Features} from './environment';
 import {MathBackend} from './math/backends/backend';
 import {MathBackendCPU} from './math/backends/backend_cpu';
 import {MathBackendWebGL} from './math/backends/backend_webgl';
-import {MathBackendWASM} from './math/backends/backend_wasm';
 
 describe('disjoint query timer enabled', () => {
   afterEach(() => {
