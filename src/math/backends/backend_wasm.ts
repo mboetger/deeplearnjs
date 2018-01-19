@@ -26,6 +26,7 @@ import {MathBackend} from './backend';
 import {MatrixOrientation} from './types/matmul';
 
 export class MathBackendWASM implements MathBackend {
+  private data: {[dataId: number]: DataTypeMap[DataType]} = {};
 
   constructor() {
   }
@@ -73,16 +74,22 @@ export class MathBackendWASM implements MathBackend {
     throw new Error('Not implemented');
   }
 
-  async read<D extends DataType>(dataId: number): Promise<DataTypeMap[D]> {
-    throw new Error('Not implemented');
+  async read<D extends DataType>(dataId: number): Promise<DataTypeMap[D]> { 
+    this.throwIfNoData(dataId);
+    return this.data[dataId];
   }
 
   readSync<D extends DataType>(dataId: number): DataTypeMap[D] {
-    throw new Error('Not implemented');
+    this.throwIfNoData(dataId);
+    return this.data[dataId];
   }
 
   write<D extends DataType>(dataId: number, values: DataTypeMap[D]): void {
-    throw new Error('Not implemented');
+    if (values == null) {
+      throw new Error('MathBackendWASM.write(): values can not be null');
+    }
+    this.throwIfNoData(dataId);
+    this.data[dataId] = values;
   }
 
   writePixels(
@@ -399,9 +406,25 @@ export class MathBackendWASM implements MathBackend {
     throw new Error('Not implemented');
   }
 
-  register(dataId: number, shape: number[], dtype: DataType): void{}
-  disposeData(dataId: number): void {}
+  register(dataId: number, shape: number[], dtype: DataType): void{
+    this.data[dataId] = null;
+  }
+
+  disposeData(dataId: number): void {
+    delete this.data[dataId];
+  }
+
   dispose() {}
+
+  private throwIfNoData(dataId: number) {
+    if (!(dataId in this.data)) {
+      throw new Error(
+          `No data found for NDArray with data id ${dataId}. ` +
+          `Use dl.ENV.math instead of constructing your own NDArrayMath. ` +
+          `If you need to construct your own math, make sure this array is ` +
+          `allocated after the math construction`);
+    }
+  }
 }
 
 ENV.registerBackend('wasm', () => new MathBackendWASM());
