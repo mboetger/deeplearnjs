@@ -24,11 +24,18 @@ import {SumTypes} from '../types';
 
 import {MathBackend} from './backend';
 import {MatrixOrientation} from './types/matmul';
+import {WASMManager} from './wasm/wasmmanager';
 
 export class MathBackendWASM implements MathBackend {
   private data: {[dataId: number]: DataTypeMap[DataType]} = {};
+  private wasmManager = new WASMManager();
+
 
   constructor() {
+    //this.wasmManager.load();
+    if (this.wasmManager == null) {
+      console.log('test');
+    }
   }
 
   matMul(
@@ -36,6 +43,8 @@ export class MathBackendWASM implements MathBackend {
       bOrientation = MatrixOrientation.REGULAR): Array2D {
     // FOR NOW JUST USE THE STANDARD CPU MATMUL
     // TODO: replace with wasm implementation
+    //const testResult = MatMul.matmul();
+    //console.log('MatMul test result: ' + testResult);
     const sharedDim =
         (aOrientation === MatrixOrientation.REGULAR) ? a.shape[1] : a.shape[0];
 

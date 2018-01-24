@@ -21,6 +21,7 @@
     "src/math/backend.ts",
     "src/math/backend_cpu.ts",
     "src/math/backend_webgl.ts",
+    "src/math/backend_wasm.ts",
     "src/math/ndarray.ts",
     "src/math/backends/webgl/gpgpu_util.ts",
     "src/math/backends/webgl/gpgpu_context.ts",
