@@ -32,10 +32,7 @@ export class MathBackendWASM implements MathBackend {
 
 
   constructor() {
-    //this.wasmManager.load();
-    if (this.wasmManager == null) {
-      console.log('test');
-    }
+    this.wasmManager.load();
   }
 
   matMul(
@@ -43,8 +40,8 @@ export class MathBackendWASM implements MathBackend {
       bOrientation = MatrixOrientation.REGULAR): Array2D {
     // FOR NOW JUST USE THE STANDARD CPU MATMUL
     // TODO: replace with wasm implementation
-    //const testResult = MatMul.matmul();
-    //console.log('MatMul test result: ' + testResult);
+    const testResult = this.wasmManager.matmul();
+    console.log('MatMul test result: ' + testResult);
     const sharedDim =
         (aOrientation === MatrixOrientation.REGULAR) ? a.shape[1] : a.shape[0];
 
