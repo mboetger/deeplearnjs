@@ -1,15 +1,29 @@
 ///<reference path="./webassembly.d.ts" />
 
 export class WASMManager {
+  private loading: Promise<void|WebAssembly.ResultObject>|null = null;
   private wasmInstance: WebAssembly.Instance|null = null;
   private wasmModule: WebAssembly.Module|null = null;
   private exports: any = null;
   private memory: WebAssembly.Memory|null = null;
   private wasmCode = "AGFzbQEAAAABBQFgAAF/AlQFA2VudgZtZW1vcnkCAYACgAIDZW52BXRhYmxlAXABAAADZW52Cm1lbW9yeUJhc2UDfwADZW52CXRhYmxlQmFzZQN/AANlbnYIU1RBQ0tUT1ADfwADAgEABg4CfwEjAgt9AUMAAAAACwcLAQdfbWF0bXVsAAAJAQAKDQELAQJ/IwMhAUEGDws=";
 
-  constructor() {}
+  constructor() {
+    this.load().then(() => {});
+  }
 
   public load() {
+    if (this.wasmModule && this.wasmInstance) {
+      return Promise.resolve({
+	'module': this.wasmModule,
+	'instance': this.wasmInstance
+      });
+    }
+
+    if (this.loading) {
+      return this.loading;
+    }
+
     const decoded = atob(this.wasmCode);
     const length = decoded.length;
     const bytes = new Uint8Array(length);
@@ -29,19 +43,19 @@ export class WASMManager {
         }
     };
 
-    WebAssembly.instantiate(bytes, imports).then((results) => {
-      console.log('Matmul: ' + results.instance.exports._matmul());
+    this.loading = WebAssembly.instantiate(bytes, imports).then((results) => {
+      this.exports = results.instance.exports;
       this.wasmModule = results.module;
       this.wasmInstance = results.instance;
-      this.exports = results.instance.exports;
+      return results;
     }).catch(err => console.warn('err loading wasm', err));
+
+    return this.loading;
   }
 
   public matmul() {
-    if (this.exports == null || this.wasmModule == null || this.wasmInstance == null) {
-      console.log('Exports null - matmul called before WebAssembly instantiate finished.');
-      return 1;
-    }
-    return this.exports._matmul();
+    return this.load().then((results) => {
+      return this.exports._matmul();
+    });
   }
 }

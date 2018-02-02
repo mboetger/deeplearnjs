@@ -284,10 +284,25 @@ const gpuTests: MathTests = it => {
   });
 };
 
+const wasmTests: MathTests = it => {
+  it('A^t x B^t', math => {
+    const a = Array2D.new([3, 2], [1, 2, 3, 4, 5, 6]);
+    const b = Array2D.new([2, 3], [1, 0, 2, 4, 3, 0]);
+
+    const c = math.matMul(
+        a, b, MatrixOrientation.TRANSPOSED, MatrixOrientation.TRANSPOSED);
+
+    const expected = new Float32Array([11, 13, 14, 20]);
+    return c.data().then((result) => {
+      test_util.expectArraysClose(result, expected);
+    });
+  });
+};
+
 test_util.describeMathCPU('matMul', [commonTests]);
 test_util.describeMathGPU('matMul', [commonTests, gpuTests], [
   {'WEBGL_FLOAT_TEXTURE_ENABLED': true, 'WEBGL_VERSION': 1},
   {'WEBGL_FLOAT_TEXTURE_ENABLED': true, 'WEBGL_VERSION': 2},
   {'WEBGL_FLOAT_TEXTURE_ENABLED': false, 'WEBGL_VERSION': 1}
 ]);
-test_util.describeMathWASM('matMul', [commonTests]);
+test_util.describeMathWASM('matMul', [wasmTests]);

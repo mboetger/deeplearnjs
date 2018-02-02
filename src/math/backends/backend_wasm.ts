@@ -26,13 +26,19 @@ import {MathBackend} from './backend';
 import {MatrixOrientation} from './types/matmul';
 import {WASMManager} from './wasm/wasmmanager';
 
+export interface WasmData {
+  p: Promise<DataTypeMap[DataType]>;
+  shape: number[];
+  dtype: DataType;
+  values: DataTypeMap[DataType];
+}
+
 export class MathBackendWASM implements MathBackend {
-  private data: {[dataId: number]: DataTypeMap[DataType]} = {};
-  private wasmManager = new WASMManager();
+  private data: {[dataId: number]: WasmData} = {};
+  private wasmManager: WASMManager = null;
 
-
-  constructor() {
-    this.wasmManager.load();
+  constructor(wasmManager: WASMManager = new WASMManager()) {
+    this.wasmManager = wasmManager;
   }
 
   matMul(
@@ -40,8 +46,6 @@ export class MathBackendWASM implements MathBackend {
       bOrientation = MatrixOrientation.REGULAR): Array2D {
     // FOR NOW JUST USE THE STANDARD CPU MATMUL
     // TODO: replace with wasm implementation
-    const testResult = this.wasmManager.matmul();
-    console.log('MatMul test result: ' + testResult);
     const sharedDim =
         (aOrientation === MatrixOrientation.REGULAR) ? a.shape[1] : a.shape[0];
 
@@ -61,33 +65,45 @@ export class MathBackendWASM implements MathBackend {
     const bGetter = (bOrientation === MatrixOrientation.REGULAR) ?
         normalGetter :
         transposedGetter;
-    const values = new Float32Array(leftDim * rightDim);
-    let index = 0;
-    for (let i = 0; i < leftDim; ++i) {
-      for (let j = 0; j < rightDim; ++j) {
-        let sum = 0;
-        for (let k = 0; k < sharedDim; ++k) {
-          // TODO: optimize CPU matmul.
-          sum += aGetter(a, i, k) * bGetter(b, k, j);
-        }
-        values[index++] = sum;
+    const output =
+        this.makeOutputArray([leftDim, rightDim], 'float32') as Array2D<'float32'>;
+    this.throwIfNoData(output.dataId);
+    this.data[output.dataId].p = this.wasmManager.matmul().then((result) => {
+      const values = new Float32Array(leftDim * rightDim);
+      let index = 0;
+      for (let i = 0; i < leftDim; ++i) {
+	for (let j = 0; j < rightDim; ++j) {
+	  let sum = 0;
+	  for (let k = 0; k < sharedDim; ++k) {
+	    // TODO: optimize CPU matmul.
+	    sum += aGetter(a, i, k) * bGetter(b, k, j);
+	  }
+	  values[index++] = sum;
+	}
       }
-    }
-    return Array2D.new([leftDim, rightDim], values);
+      this.data[output.dataId].values = values;
+      return values;
+    }) ;
+    return output;
+  }
+
+  private makeOutputArray<D extends DataType, T extends NDArray<D>>(
+      shape: number[], dtype: D): T {
+    return NDArray.make(shape, {}, dtype) as T;
   }
 
   clone<T extends NDArray>(ndarray: T): T {
     throw new Error('Not implemented');
   }
 
-  async read<D extends DataType>(dataId: number): Promise<DataTypeMap[D]> { 
+  async read<D extends DataType>(dataId: number): Promise<DataTypeMap[D]> {
     this.throwIfNoData(dataId);
-    return this.data[dataId];
+    return this.data[dataId].p;
   }
 
   readSync<D extends DataType>(dataId: number): DataTypeMap[D] {
     this.throwIfNoData(dataId);
-    return this.data[dataId];
+    return this.data[dataId].values;
   }
 
   write<D extends DataType>(dataId: number, values: DataTypeMap[D]): void {
@@ -95,7 +111,7 @@ export class MathBackendWASM implements MathBackend {
       throw new Error('MathBackendWASM.write(): values can not be null');
     }
     this.throwIfNoData(dataId);
-    this.data[dataId] = values;
+    this.data[dataId].values = values;
   }
 
   writePixels(
@@ -413,7 +429,15 @@ export class MathBackendWASM implements MathBackend {
   }
 
   register(dataId: number, shape: number[], dtype: DataType): void{
-    this.data[dataId] = null;
+    if (dataId in this.data) {
+      throw new Error(`data id ${dataId} already registered`);
+    }
+    this.data[dataId] = {
+      shape,
+      dtype,
+      values:null,
+      p:null
+    };
   }
 
   disposeData(dataId: number): void {
