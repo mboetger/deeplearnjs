@@ -46,6 +46,7 @@ export {CostReduction, FeedEntry, Session} from './graph/session';
 export {ConstantInitializer, Initializer, NDArrayInitializer, OnesInitializer, RandomNormalInitializer, RandomTruncatedNormalInitializer, RandomUniformInitializer, VarianceScalingInitializer, ZerosInitializer} from './initializers';
 export {MathBackendCPU, NDArrayMathCPU} from './math/backends/backend_cpu';
 export {MathBackendWebGL, NDArrayMathGPU} from './math/backends/backend_webgl';
+export {MathBackendWASM} from './math/backends/backend_wasm';
 export {MatrixOrientation} from './math/backends/types/matmul';
 export {GPGPUContext} from './math/backends/webgl/gpgpu_context';
 // tslint:disable-next-line:max-line-length

@@ -72,14 +72,14 @@ export class MathBackendWASM implements MathBackend {
       const values = new Float32Array(leftDim * rightDim);
       let index = 0;
       for (let i = 0; i < leftDim; ++i) {
-	for (let j = 0; j < rightDim; ++j) {
-	  let sum = 0;
-	  for (let k = 0; k < sharedDim; ++k) {
-	    // TODO: optimize CPU matmul.
-	    sum += aGetter(a, i, k) * bGetter(b, k, j);
-	  }
-	  values[index++] = sum;
-	}
+        for (let j = 0; j < rightDim; ++j) {
+          let sum = 0;
+          for (let k = 0; k < sharedDim; ++k) {
+            // TODO: optimize CPU matmul.
+            sum += aGetter(a, i, k) * bGetter(b, k, j);
+          }
+          values[index++] = sum;
+        }
       }
       this.data[output.dataId].values = values;
       return values;

@@ -61,3 +61,26 @@ export class MatmulGPUBenchmark implements BenchmarkTest {
     return time;
   }
 }
+
+export class MatmulWASMBenchmark implements BenchmarkTest {
+  lastRunTimeMs: number;
+  async run(size: number): Promise<number> {
+    if (this.lastRunTimeMs > LAST_RUN_CPU_CUTOFF_MS) {
+      return new Promise<number>((resolve, reject) => {
+        resolve(-1);
+      });
+    }
+    const safeMode = false;
+    const math = new NDArrayMath('wasm', safeMode);
+    ENV.setMath(math);
+    const a = Array2D.randUniform([size, size], -1, 1);
+    const b = Array2D.randUniform([size, size], -1, 1);
+    const start = performance.now();
+    math.matMul(a, b);
+    const end = performance.now();
+
+    this.lastRunTimeMs = end - start;
+    return this.lastRunTimeMs;
+  }
+}
+

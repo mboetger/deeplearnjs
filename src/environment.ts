@@ -183,7 +183,7 @@ export class Environment {
   }
 
   getBestBackend(): MathBackend {
-    const orderedBackends: BackendType[] = ['webgl', 'cpu'];
+    const orderedBackends: BackendType[] = ['webgl', 'cpu', 'wasm'];
     for (let i = 0; i < orderedBackends.length; ++i) {
       const backendId = orderedBackends[i];
       if (backendId in this.backendRegistry) {

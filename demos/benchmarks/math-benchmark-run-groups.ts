@@ -21,7 +21,7 @@ import {BenchmarkRun, BenchmarkRunGroup} from './benchmark';
 // tslint:disable-next-line:max-line-length
 import {ConvGPUBenchmark, ConvParams, DepthwiseConvParams, RegularConvParams} from './conv_benchmarks';
 // tslint:disable-next-line:max-line-length
-import {MatmulCPUBenchmark, MatmulGPUBenchmark} from './matmul_benchmarks';
+import {MatmulCPUBenchmark, MatmulGPUBenchmark, MatmulWASMBenchmark} from './matmul_benchmarks';
 // tslint:disable-next-line:max-line-length
 import {PoolBenchmarkParams, PoolCPUBenchmark, PoolGPUBenchmark} from './pool_benchmarks';
 // tslint:disable-next-line:max-line-length
@@ -56,7 +56,8 @@ export function getRunGroups(): BenchmarkRunGroup[] {
     stepToSizeTransformation: (step: number) => Math.max(1, step),
     benchmarkRuns: [
       new BenchmarkRun('mulmat_gpu', new MatmulGPUBenchmark()),
-      new BenchmarkRun('mulmat_cpu', new MatmulCPUBenchmark())
+      new BenchmarkRun('mulmat_cpu', new MatmulCPUBenchmark()),
+      new BenchmarkRun('mulmat_wasm', new MatmulWASMBenchmark())
     ],
     params: {}
   });
