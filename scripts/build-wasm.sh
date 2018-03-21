@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-emcc src/math/backends/wasm/matmul.cpp -s WASM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" -s EXPORTED_FUNCTIONS="['_matmul']" -o demos/benchmarks/matmul.js
-cp src/math/backends/wasm/matmul.wasm demos/benchmarks/matmul.wasm
+emcc src/math/backends/wasm/matmul.cpp -s WASM=1 -s TOTAL_MEMORY=1GB -s TOTAL_STACK=512MB -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" -s EXPORTED_FUNCTIONS="['_matmul']" -o demos/benchmarks/matmul.js
 scripts/build-npm.sh
 rm -rf demos/node_modules/deeplearn/* && tar -zxf deeplearn-0.4.1.tgz -C /tmp/ && mv -f /tmp/package/dist/* demos/node_modules/deeplearn/
 cp src/math/backends/wasm/wasm-arrays.d.ts demos/node_modules/deeplearn/math/backends/wasm/

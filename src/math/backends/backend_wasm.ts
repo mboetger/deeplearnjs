@@ -44,45 +44,18 @@ export class MathBackendWASM implements MathBackend {
   matMul(
       a: Array2D, b: Array2D, aOrientation = MatrixOrientation.REGULAR,
       bOrientation = MatrixOrientation.REGULAR): Array2D {
-    // FOR NOW JUST USE THE STANDARD CPU MATMUL
-    // TODO: replace with wasm implementation
-    const sharedDim =
-        (aOrientation === MatrixOrientation.REGULAR) ? a.shape[1] : a.shape[0];
 
     const leftDim =
         (aOrientation === MatrixOrientation.REGULAR) ? a.shape[0] : a.shape[1];
     const rightDim =
         (bOrientation === MatrixOrientation.REGULAR) ? b.shape[1] : b.shape[0];
 
-    const normalGetter = (matrix: Array2D, i: number, j: number) =>
-        matrix.get(i, j);
-    const transposedGetter = (matrix: Array2D, i: number, j: number) =>
-        matrix.get(j, i);
-
-    const aGetter = (aOrientation === MatrixOrientation.REGULAR) ?
-        normalGetter :
-        transposedGetter;
-    const bGetter = (bOrientation === MatrixOrientation.REGULAR) ?
-        normalGetter :
-        transposedGetter;
     const output =
         this.makeOutputArray([leftDim, rightDim], 'float32') as Array2D<'float32'>;
     this.throwIfNoData(output.dataId);
-    this.data[output.dataId].p = this.wasmManager.matmul().then((result) => {
-      const values = new Float32Array(leftDim * rightDim);
-      let index = 0;
-      for (let i = 0; i < leftDim; ++i) {
-        for (let j = 0; j < rightDim; ++j) {
-          let sum = 0;
-          for (let k = 0; k < sharedDim; ++k) {
-            // TODO: optimize CPU matmul.
-            sum += aGetter(a, i, k) * bGetter(b, k, j);
-          }
-          values[index++] = sum;
-        }
-      }
-      this.data[output.dataId].values = values;
-      return values;
+    this.data[output.dataId].p = this.wasmManager.matmul(a, b, aOrientation, bOrientation).then((result) => {
+      this.data[output.dataId].values = result;
+      return result;
     }) ;
     return output;
   }
