@@ -13,9 +13,9 @@ extern "C" {
 
   float get(float* matrix, int i, int16_t iSize, int j, int16_t jSize, int8_t orientation) {
     if (orientation == 0) {
-      return *(matrix + i * iSize + j);
+      return *(matrix + i * jSize + j);
     } else {
-      return *(matrix + j * jSize + i);
+      return *(matrix + j * iSize + i);
     }
   }
 
